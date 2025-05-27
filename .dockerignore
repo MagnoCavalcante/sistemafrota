@@ -1,14 +1,41 @@
 # Git
 .git
 .gitignore
-.github
 
 # Python
-__pycache__/
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.env
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# IDE
+.vscode/
+.idea/
+
+# Outros
+README.md
+*.md
+LICENSE
+*.yml
+*.yaml
+!render.yaml
+
+# Virtual Environment
+ENV/
+
+# Python
 *.py[cod]
 *$py.class
 *.so
-.Python
 env/
 build/
 develop-eggs/
@@ -26,16 +53,6 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual Environment
-venv/
-ENV/
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
 # Docker
 .dockerignore
 Dockerfile
@@ -43,7 +60,4 @@ docker-compose.yml
 
 # Misc
 .DS_Store
-node_modules/
-media/
-staticfiles/
-db.sqlite3 
+node_modules/ 

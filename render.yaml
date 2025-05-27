@@ -1,16 +1,12 @@
 services:
   - type: web
     name: sistemafrota
-    env: python
+    env: docker
     region: oregon
     plan: free
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
-    startCommand: gunicorn sistemafrota.wsgi:application
     envVars:
       - key: DEBUG
         value: 0
-      - key: PYTHON_VERSION
-        value: 3.11.0
       - key: SECRET_KEY
         generateValue: true
       - key: ALLOWED_HOSTS
