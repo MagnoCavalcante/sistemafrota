@@ -1,0 +1,39 @@
+/* Estilos globais para botões */
+.btn-primary-custom {
+    background-color: #670474 !important;
+    color: white !important;
+    border: none !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 0.25rem !important;
+    transition: background-color 0.2s ease-in-out !important;
+}
+
+.btn-primary-custom:hover {
+    background-color: #3a0341 !important;
+}
+
+.btn-secondary-custom {
+    background-color: #3a0341 !important;
+    color: white !important;
+    border: none !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 0.25rem !important;
+    transition: background-color 0.2s ease-in-out !important;
+}
+
+.btn-secondary-custom:hover {
+    background-color: #670474 !important;
+}
+
+/* Estilos para botões pequenos */
+.btn-sm.btn-primary-custom,
+.btn-sm.btn-secondary-custom {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.875rem !important;
+}
+
+/* Estilos para ícones dentro dos botões */
+.btn-primary-custom i,
+.btn-secondary-custom i {
+    margin-right: 0.5rem;
+} 

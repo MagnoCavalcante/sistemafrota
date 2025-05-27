@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+
+{% block content %}
+    <div class="container mt-2" style="max-width: 2000px;"> {# Container externo para espaçamento #}
+        <div class="text-white p-2 rounded" style="background-color: #670474;">
+             <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
+                <h2 class="mb-3 mb-md-0">Cadastrar Veículo</h2>
+                {# Botão "Ver Veículos" - opcional #}
+                <a href="{% url 'listar_veiculos' %}" class="btn btn-secondary-custom">
+                    <i class="fas fa-list"></i> Ver Veículos
+                </a>
+            </div>
+        </div>
+
+        <div class="card card-body mt-3"> {# Card que envolve o formulário principal #}
+            <form method="post">
+                {% csrf_token %}
+                
+                {# Exibição de erros não-de-campo gerais do formulário #}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {# Organizando os campos em linhas e colunas para controlar a largura e alinhamento #}
+                <div class="row">
+                    <div class="col-md-6 mb-3"> {# Campo Placa #}
+                        <div class="form-group">
+                            <label for="{{ form.placa.id_for_label }}">Placa:</label>
+                            {{ form.placa|add_class:"form-control w-100" }}
+                            {% for error in form.placa.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3"> {# Campo Modelo #}
+                        <div class="form-group">
+                            <label for="{{ form.modelo.id_for_label }}">Modelo:</label>
+                            {{ form.modelo|add_class:"form-control w-100" }}
+                            {% for error in form.modelo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3"> {# Campo Combustível #}
+                        <div class="form-group">
+                            <label for="{{ form.combustivel.id_for_label }}">Combustível:</label>
+                            {{ form.combustivel|add_class:"form-control w-100" }}
+                            {% for error in form.combustivel.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3"> {# Campo Motorista #}
+                        <div class="form-group">
+                            <label for="{{ form.motorista.id_for_label }}">Motorista:</label>
+                            {{ form.motorista|add_class:"form-control w-100" }}
+                            {% for error in form.motorista.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3"> {# Campo Setor #}
+                        <div class="form-group">
+                            <label for="{{ form.setor.id_for_label }}">Setor:</label>
+                            {{ form.setor|add_class:"form-control w-100" }}
+                            {% for error in form.setor.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3"> {# Campo Valor FIPE #}
+                        <div class="form-group">
+                            <label for="{{ form.valor_fipe.id_for_label }}">Valor FIPE:</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                {{ form.valor_fipe|add_class:"form-control w-100" }}
+                            </div>
+                            {% for error in form.valor_fipe.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3"> {# Campo Ativo #}
+                        <div class="form-group form-check"> {# Usar form-check para checkbox #}
+                            {{ form.ativo }}
+                            <label class="form-check-label" for="{{ form.ativo.id_for_label }}">Ativo</label>
+                            {% for error in form.ativo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3"> {# Campo Motivo Inativo #}
+                        <div class="form-group">
+                            <label for="{{ form.motivo_inativo.id_for_label }}">Motivo Inativo:</label>
+                            {{ form.motivo_inativo|add_class:"form-control w-100" }}
+                            {% for error in form.motivo_inativo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 mb-3"> {# Campo Observações (largura total) #}
+                        <div class="form-group">
+                            <label for="{{ form.observacoes.id_for_label }}">Observações:</label>
+                            {{ form.observacoes|add_class:"form-control w-100" }}
+                            {% for error in form.observacoes.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary-custom">
+                        <i class="fas fa-save"></i> Cadastrar
+                    </button>
+                    <a href="{% url 'listar_veiculos' %}" class="btn btn-secondary-custom">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div> {# Fim do card #}
+    </div> {# Fim do container #}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const fipeInput = document.getElementById('id_valor_fipe');
+            if (fipeInput) {
+                fipeInput.addEventListener('input', function () {
+                    this.value = this.value.replace(',', '.');
+                });
+            }
+        });
+    </script>
+
+{% endblock %}

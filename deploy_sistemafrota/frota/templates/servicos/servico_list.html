@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista de Serviços{% endblock %}
+
+{% block content %}
+    <h2>Lista de Serviços</h2>
+    <a href="{% url 'cadastrar_servico' %}" class="btn btn-primary mb-3">Cadastrar Novo Serviço</a>
+
+    {% if servicos %}
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Serviço</th> {# Apenas a coluna "Serviço" (nome) #}
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for servico in servicos %}
+                    <tr>
+                        <td>{{ servico.nome }}</td>
+                        <td>
+                            <a href="{% url 'editar_servico' servico.pk %}" class="btn btn-info btn-sm">Editar</a>
+                            <a href="{% url 'excluir_servico' servico.pk %}" class="btn btn-danger btn-sm">Excluir</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Nenhum serviço cadastrado ainda.</p>
+    {% endif %}
+{% endblock %}

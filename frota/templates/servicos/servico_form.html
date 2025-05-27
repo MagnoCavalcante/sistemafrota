@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if form.instance.pk %}Editar Serviço{% else %}Cadastrar Serviço{% endif %}
+{% endblock %}
+
+{% block content %}
+    <h2>{% if form.instance.pk %}Editar Serviço{% else %}Cadastrar Serviço{% endif %}</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col-md-6 mb-3"> {# Campo 'nome' ocupará 6 colunas #}
+                <div class="form-group">
+                    <label for="{{ form.nome.id_for_label }}">{{ form.nome.label }}:</label>
+                    {{ form.nome }}
+                    {% if form.nome.help_text %}<small class="form-text text-muted">{{ form.nome.help_text }}</small>{% endif %}
+                    {% for error in form.nome.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Salvar</button>
+        <a href="{% url 'listar_servicos' %}" class="btn btn-secondary mt-3">Cancelar</a>
+    </form>
+{% endblock %}

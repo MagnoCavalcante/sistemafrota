@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container mt-2" style="max-width: 2000px;">
+            <div class="text-white p-3 rounded" style="background-color: #670474;">
+                <div class="d-flex flex-column flex-md-row justify-content-center align-items-center mb-3">
+                    <h2 class="mb-3 mb-md-0">Painel de Controle</h2>
+                </div>
+            </div>
+
+    <div class="row mt-2">
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body p-3">
+                    <h6 class="card-title mb-2">Veículos Ativos</h6>
+                    <p class="card-text h5 mb-0">{{ veiculos_ativos }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body p-3">
+                    <h6 class="card-title mb-2">Veículos Inativos</h6>
+                    <p class="card-text h5 mb-0">{{ veiculos_inativos }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body p-3">
+                    <h6 class="card-title mb-2">Valor Total das Manutenções</h6>
+                    <p class="card-text h6 mb-0">R$ {{ valor_total_manutencao|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body p-3">
+                    <h6 class="card-title mb-2">Valor Total da Frota</h6>
+                    <p class="card-text h6 mb-0">R$ {{ valor_total_frota|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-md-6 mb-3"> {# Distribuição de Veículos por Setor #}
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center" style="height: 320px;">
+                    <h5 class="card-title">Distribuição de Veículos por Setor</h5>
+                    <div class="chart-container" style="position: relative; height:250px; max-width: 350px;">
+                        <canvas id="graficoVeiculos"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3"> {# Motoristas com CNH Vencida #}
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Motoristas com CNH Vencida</h6>
+                    {% if motoristas_cnh_vencida_lista %}
+                        <ul class="list-group list-group-flush">
+                            {% for motorista in motoristas_cnh_vencida_lista %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center table-danger text-danger font-weight-bold">
+                                    <span>{{ motorista.nome }}</span>
+                                    <span>Vencida: {{ motorista.validade_cnh|date:"d/m/Y" }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <p class="card-text text-muted mt-2">Total: {{ motoristas_cnh_vencida_lista|length }} motorista(s) com CNH vencida.</p>
+                    {% else %}
+                        <p class="card-text h5 text-success font-weight-bold">Nenhum motorista com CNH vencida!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-md-6 mb-4"> {# Valor de Manutenção por Mês #}
+            <div class="card">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center" style="height: 350px;">
+                    <h5 class="card-title">Valor de Manutenção por Mês</h5>
+                    <div class="chart-container" style="position: relative; height:250px; max-width: 400px;">
+                        <canvas id="graficoManutencaoMes"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4"> {# Top 5 Peças Mais Utilizadas #}
+            <div class="card">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center" style="height: 350px;">
+                    <h6 class="card-title text-center">Top 5 Peças Mais Utilizadas</h6>
+                    <canvas id="graficoPecasMaisUtilizadas" class="w-100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-md-6 mb-4"> {# Tipos de Manutenção 1 #}
+            <div class="card">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center" style="height: 320px;">
+                    <h5 class="card-title">Tipos de Manutenção 1</h5>
+                    <div class="chart-container" style="position: relative; height:250px; max-width: 400px;">
+                        <canvas id="graficoTipo1"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4"> {# Tipos de Manutenção 2 #}
+            <div class="card">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center" style="height: 320px;">
+                    <h5 class="card-title">Tipos de Manutenção 2</h5>
+                    <div class="chart-container" style="position: relative; height:250px; max-width: 400px;">
+                        <canvas id="graficoTipo2"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+    {# Carregamento da extensão chartjs-plugin-datalabels #}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script> {# <-- ADICIONADO #}
+    
+    <script>
+        // Registrar a extensão dos datalabels
+        Chart.register(ChartDataLabels); {# <-- ADICIONADO #}
+
+        // Dados para o gráfico de Peças Mais Utilizadas
+        const pecasLabels = [];
+        const pecasData = [];
+        {% for item in pecas_mais_utilizadas_data %}
+            pecasLabels.push("{{ item.peca__nome|escapejs }}");
+            pecasData.push({{ item.total_quantidade }});
+        {% endfor %}
+
+        new Chart(document.getElementById('graficoPecasMaisUtilizadas').getContext('2d'), {
+            type: 'bar', 
+            data: {
+                labels: pecasLabels,
+                datasets: [{
+                    label: 'Quantidade Utilizada',
+                    data: pecasData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y', 
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Total Utilizado'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Peça'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    title: { display: false }
+                }
+            }
+        });
+
+        // CÓDIGO DO GRÁFICO DE DISTRIBUIÇÃO DE VEÍCULOS POR SETOR (ALTERADO)
+        const labelsSetores = [];
+        const valoresSetores = [];
+        {% for label in labels_setores %}
+            labelsSetores.push("{{ label|escapejs }}");
+        {% endfor %}
+        {% for valor in valores_setores %}
+            valoresSetores.push({{ valor }});
+        {% endfor %}
+
+        new Chart(document.getElementById('graficoVeiculos').getContext('2d'), { 
+            type: 'pie', // Mantido como pie, mas agora com dados por setor
+            data: {
+                labels: labelsSetores,
+                datasets: [{
+                    data: valoresSetores,
+                    backgroundColor: [ 
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9900', '#C9CBCE'
+                    ],
+                    hoverBackgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9900', '#C9CBCE'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom', 
+                    },
+                    title: {
+                        display: false 
+                    },
+                    datalabels: { // <-- ADICIONADO para exibir os valores nas fatias
+                        color: '#fff', // Cor do texto dos rótulos
+                        formatter: (value, context) => {
+                            // Retorna o valor (quantidade de veículos)
+                            return value; 
+                        },
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Seus outros códigos new Chart(...) para os gráficos restantes (ManutencaoMes, Tipo1, Tipo2)
+        new Chart(document.getElementById('graficoManutencaoMes').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: {{ labels_meses|safe }},
+                datasets: [{
+                    label: 'R$ por mês',
+                    data: {{ valores_meses|safe }},
+                    backgroundColor: '#007bff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+            }
+        });
+
+        new Chart(document.getElementById('graficoTipo1').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: {{ labels_tipo1|safe }},
+                datasets: [{
+                    label: 'Quantidade',
+                    data: {{ valores_tipo1|safe }},
+                    backgroundColor: '#ffc107'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+            }
+        });
+
+        new Chart(document.getElementById('graficoTipo2').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: {{ labels_tipo2|safe }},
+                datasets: [{
+                    label: 'Quantidade',
+                    data: {{ valores_tipo2|safe }},
+                    backgroundColor: '#17a2b8'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,80 @@
+version: '3.8'
+
+# Redes
+networks:
+  traefik-public:
+    external: true
+
+# Volumes
+volumes:
+  postgres_data:
+    external: true
+    name: sistemafrota_postgres_data
+  static_volume:
+    external: true
+    name: sistemafrota_static_volume
+  media_volume:
+    external: true
+    name: sistemafrota_media_volume
+
+# Serviços
+services:
+  # Aplicação Web
+  web:
+    image: magno08/sistemafrota:latest
+    restart: always
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    networks:
+      - traefik-public
+      - default
+    environment:
+      - DEBUG=0
+      - SECRET_KEY=django-insecure-bg@odu+tv1q=(5iq@#1l2)pu!v9^+h-ydz7-q9znz=hz0j2ic$
+      - ALLOWED_HOSTS=frota.mov.pto.br,localhost,127.0.0.1
+      - POSTGRES_DB=sistemafrota
+      - POSTGRES_USER=sistemafrota_user
+      - POSTGRES_PASSWORD=S3nh4S3gur4!2024
+      - DATABASE_URL=postgres://sistemafrota_user:S3nh4S3gur4!2024@db:5432/sistemafrota
+      - EMAIL_HOST=smtp.gmail.com
+      - EMAIL_PORT=587
+      - EMAIL_USE_TLS=True
+      - EMAIL_HOST_USER=seu-email@gmail.com
+      - EMAIL_HOST_PASSWORD=sua-senha-de-app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sistemafrota.rule=Host(`frota.mov.pto.br`)"
+      - "traefik.http.routers.sistemafrota.entrypoints=websecure"
+      - "traefik.http.routers.sistemafrota.tls.certresolver=letsencrypt"
+      - "traefik.http.services.sistemafrota.loadbalancer.server.port=8000"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.sistemafrota-http.rule=Host(`frota.mov.pto.br`)"
+      - "traefik.http.routers.sistemafrota-http.entrypoints=web"
+      - "traefik.http.routers.sistemafrota-http.middlewares=redirect-to-https"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Banco de Dados
+  db:
+    image: postgres:15
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=sistemafrota
+      - POSTGRES_USER=sistemafrota_user
+      - POSTGRES_PASSWORD=S3nh4S3gur4!2024
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sistemafrota_user -d sistemafrota"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s 

@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-2" style="max-width: 2000px;">
+    <div class="text-white p-2 rounded" style="background-color: #670474;">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
+            <h2 class="mb-3 mb-md-0">Editar Multa</h2>
+            <a href="{% url 'listar_multas' %}" class="btn btn-secondary-custom">
+                <i class="fas fa-list"></i> Ver Multas
+            </a>
+        </div>
+    </div>
+
+    <div class="card card-body mt-3">
+        <form method="post">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="form-group">
+                        <label for="{{ form.veiculo.id_for_label }}">Veículo:</label>
+                        {{ form.veiculo }}
+                        {% for error in form.veiculo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-group">
+                        <label for="{{ form.motorista.id_for_label }}">Motorista Responsável:</label>
+                        {{ form.motorista }}
+                        {% for error in form.motorista.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="form-group">
+                        <label for="{{ form.data.id_for_label }}">Data da Multa:</label>
+                        {{ form.data }}
+                        {% for error in form.data.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-group">
+                        <label for="{{ form.tipo.id_for_label }}">Tipo da Multa:</label>
+                        {{ form.tipo }}
+                        {% for error in form.tipo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="form-group">
+                        <label for="{{ form.local.id_for_label }}">Local da Multa:</label>
+                        {{ form.local }}
+                        {% for error in form.local.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-group">
+                        <label for="{{ form.valor.id_for_label }}">Valor da Multa:</label>
+                        {{ form.valor }}
+                        {% for error in form.valor.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <div class="form-group">
+                        <label for="{{ form.observacoes.id_for_label }}">Observações:</label>
+                        {{ form.observacoes }}
+                        {% for error in form.observacoes.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <div class="form-check">
+                        {{ form.paga }}
+                        <label class="form-check-label" for="{{ form.paga.id_for_label }}">Multa Paga</label>
+                        {% for error in form.paga.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary-custom">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
+                <a href="{% url 'listar_multas' %}" class="btn btn-secondary-custom">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const valorInput = document.getElementById('id_valor');
+        if (valorInput) {
+            valorInput.addEventListener('input', function() {
+                let valor = this.value.replace(/\D/g, '');
+                if (valor.length < 3) {
+                    valor = valor.padStart(3, '0');
+                }
+                valor = valor.replace(/^0+(?!$)/, '');
+                const parteInteira = valor.slice(0, valor.length - 2);
+                const parteDecimal = valor.slice(-2);
+                const valorFormatado = `${parteInteira},${parteDecimal}`;
+                this.value = valorFormatado;
+            });
+
+            const form = valorInput.closest('form');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    const valor = valorInput.value.replace(/\./g, '').replace(',', '.');
+                    valorInput.value = valor;
+                });
+            }
+        }
+    });
+</script>
+{% endblock %} 

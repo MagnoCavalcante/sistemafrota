@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    {% load static %}
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <!-- Bootstrap e FontAwesome -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+    .logo {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+    .logo h1 {
+    font-size:65px;    /* Aumenta o tamanho do texto */
+    font-weight: bold;
+    color: #fff;
+    padding: 10px 0;
+    border-bottom: 2px solid #fff; /* Linha opcional para destacar */
+    width: 100%;
+    }
+
+    body, html {
+        height: 100%;
+        margin: 0;
+    }
+
+    .main-container {
+        display: flex;
+        height: 100vh;
+    }
+
+    .login-image-container {
+        background-image: url('{% static "imagem/login_bg.png" %}');
+        background-size: cover;
+        background-position: center;
+        width: 50%; /* Metade da largura para a imagem */
+    }
+
+    .login-container {
+        width: 50%; /* Metade da largura para o formulário */
+        background-color: #6f42c1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+    }
+
+    .login-box {
+    background-color: #6f42c1;
+    padding: 40px;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 650px; /* Aumenta a largura */
+    min-height: 500px; /* Define uma altura mínima maior */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centraliza os campos verticalmente */
+    }
+
+    .logo img {
+        max-width: 150px;
+        height: auto;
+        margin-bottom: 50px;
+    }
+
+    h2 {
+        margin-bottom: 30px;
+        font-weight: bold;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+        position: relative;
+    }
+
+    .form-control {
+    background-color: #9d75d6;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    padding: 18px; /* Aumenta o preenchimento */
+    font-size: 18px; /* Fonte maior */
+    height: 55px; /* Altura maior */
+    width: 70%;
+    margin: 0 auto; /* Centraliza horizontalmente */
+    display: block; /* Garante que o margin funcione */
+    transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        background-color: #8a5dcc;
+        box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+    }
+
+    .form-control.is-invalid {
+        border: 1px solid #dc3545;
+        background-color: #9d75d6;
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .btn-primary {
+    background-color: #3a0573;
+    color: #fff;
+    border: none;
+    padding: 15px 30px; /* Mais espaço interno */
+    border-radius: 8px;
+    font-weight: bold;
+    width: 70%;
+    font-size: 18px; /* Fonte maior */
+    height: 55px; /* Altura maior */
+    margin: 0 auto; /* Centraliza horizontalmente */
+    display: block; /* Garante que o margin funcione */
+    transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        background-color: #4a1583;
+        transform: translateY(-2px);
+    }
+
+    .btn-primary:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+
+    .alert {
+        width: 70%;
+        margin: 20px auto 0;
+        text-align: center;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 16%;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .password-toggle:focus {
+        outline: none;
+    }
+
+    .password-toggle:hover {
+        color: #eee;
+    }
+
+    .invalid-feedback {
+        display: none;
+        width: 70%;
+        margin: 5px auto 0;
+        color: #ffc107;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    .shake {
+        animation: shake 0.5s;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+</style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="login-image-container"></div>
+
+    <div class="login-container">
+        <div class="login-box">
+            <div class="logo">
+                <h1>MOV FROTA</h1>
+            </div>
+            <form method="post" action="{% url 'tela_login' %}" id="loginForm" novalidate>
+                {% csrf_token %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %} shake">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <div class="form-group">
+                    <label for="username" class="sr-only">Usuário</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Usuário" required>
+                    <div class="invalid-feedback">
+                        Por favor, digite seu nome de usuário
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="sr-only">Senha</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Senha" required>
+                    <button type="button" class="password-toggle" onclick="togglePassword()">
+                        <i class="fas fa-eye" id="toggleIcon"></i>
+                    </button>
+                    <div class="invalid-feedback">
+                        Por favor, digite sua senha
+                    </div>
+                </div>
+                <input type="hidden" name="next" value="{{ next }}">
+                <button type="submit" class="btn btn-primary btn-block" id="submitBtn" disabled>Entrar</button>
+                <div class="text-center mt-3">
+                    <a href="{% url 'password_reset' %}" class="text-white">Esqueceu sua senha?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('loginForm');
+    const username = document.getElementById('username');
+    const password = document.getElementById('password');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function validateForm() {
+        let isValid = true;
+        
+        // Validar usuário
+        if (!username.value.trim()) {
+            username.classList.add('is-invalid');
+            username.nextElementSibling.style.display = 'block';
+            isValid = false;
+        } else {
+            username.classList.remove('is-invalid');
+            username.nextElementSibling.style.display = 'none';
+        }
+
+        // Validar senha
+        if (!password.value.trim()) {
+            password.classList.add('is-invalid');
+            password.nextElementSibling.nextElementSibling.style.display = 'block';
+            isValid = false;
+        } else {
+            password.classList.remove('is-invalid');
+            password.nextElementSibling.nextElementSibling.style.display = 'none';
+        }
+
+        // Habilitar/desabilitar botão de submit
+        submitBtn.disabled = !isValid;
+        
+        return isValid;
+    }
+
+    // Validar em tempo real
+    username.addEventListener('input', validateForm);
+    password.addEventListener('input', validateForm);
+
+    // Validar no submit
+    form.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            const loginBox = document.querySelector('.login-box');
+            loginBox.classList.add('shake');
+            setTimeout(() => loginBox.classList.remove('shake'), 500);
+        }
+    });
+
+    // Validação inicial
+    validateForm();
+});
+</script>
+
+</body>
+</html>

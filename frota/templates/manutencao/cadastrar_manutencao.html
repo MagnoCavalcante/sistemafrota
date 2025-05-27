@@ -1,0 +1,489 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container mt-2" style="max-width: 2000px;">
+            <div class="text-white p-2 rounded" style="background-color: #670474;">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
+                    <h2 class="mb-3 mb-md-0">Cadastro de Manutenção</h2>
+                    {# Botão - opcional #}
+                    <a href="{% url 'listar_manutencoes' %}" class="btn btn-secondary-custom">
+                        <i class="fas fa-list"></i> Ver Manutenções
+                    </a>
+                </div>
+            </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {# ESTRUTURA PRINCIPAL DO LAYOUT: DIVIDIDA EM 3 COLUNAS #}
+        <div class="row">
+
+            {# COLUNA 1: CAMPOS PRINCIPAIS DA MANUTENÇÃO (Esquerda) #}
+            <div class="col-md-4"> 
+                <div class="form-group mb-3">
+                    <label for="{{ manutencao_form.veiculo.id_for_label }}">Veículo:</label>
+                    {{ manutencao_form.veiculo }}
+                    {% for error in manutencao_form.veiculo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="{{ manutencao_form.quilometragem.id_for_label }}">Quilometragem:</label>
+                    {{ manutencao_form.quilometragem }}
+                    {% for error in manutencao_form.quilometragem.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="{{ manutencao_form.fornecedor.id_for_label }}">Fornecedor:</label>
+                    {{ manutencao_form.fornecedor }}
+                    {% for error in manutencao_form.fornecedor.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="{{ manutencao_form.motorista.id_for_label }}">Motorista:</label>
+                    {{ manutencao_form.motorista }}
+                    {% for error in manutencao_form.motorista.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="{{ manutencao_form.centro_custo.id_for_label }}">Centro de Custo:</label>
+                    {{ manutencao_form.centro_custo }}
+                    {% for error in manutencao_form.centro_custo.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="{{ manutencao_form.tipo_manutencao_1.id_for_label }}">Tipo Manutenção 1:</label>
+                    {{ manutencao_form.tipo_manutencao_1 }}
+                    {% for error in manutencao_form.tipo_manutencao_1.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="{{ manutencao_form.tipo_manutencao_2.id_for_label }}">Tipo Manutenção 2:</label>
+                    {{ manutencao_form.tipo_manutencao_2 }}
+                    {% for error in manutencao_form.tipo_manutencao_2.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+                
+                {# CAMPO VALE REMOVIDO DAQUI - AGORA ESTARÁ NO FINAL AO LADO DE ORÇAMENTO E VALOR TOTAL #}
+            </div>
+
+            {# COLUNA 2: ESCOLHER PEÇAS/SERVIÇOS E BOTÕES CRIAR (Centro) #}
+            <div class="col-md-4"> 
+                <h4 class="mt-0">Escolher Peças</h4>
+                <div class="input-group mb-3">
+                    <select id="peca-select" class="form-control">
+                        <option value="">--- Escolha uma Peça ---</option>
+                        {% for peca in pecas_disponiveis %} 
+                            <option value="{{ peca.pk }}" data-nome="{{ peca.nome }}">{{ peca.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="input-group-append">
+                        <button class="btn btn-success" type="button" id="add-peca-btn">+</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label for="peca-quantidade">Quantidade:</label>
+                        <input type="number" id="peca-quantidade" class="form-control" value="1" min="1">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label for="peca-valor-unitario">Valor Unitário:</label>
+                        <input type="number" id="peca-valor-unitario" class="form-control" step="0.01" min="0">
+                    </div>
+                </div>
+
+                <h4 class="mt-4">Escolher Serviços</h4>
+                <div class="input-group mb-3">
+                    <select id="servico-select" class="form-control">
+                        <option value="">--- Escolha um Serviço ---</option>
+                        {% for servico in servicos_disponiveis %} 
+                            <option value="{{ servico.pk }}" data-nome="{{ servico.nome }}">{{ servico.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="input-group-append">
+                        <button class="btn btn-success" type="button" id="add-servico-btn">+</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label for="servico-quantidade">Quantidade:</label>
+                        <input type="number" id="servico-quantidade" class="form-control" value="1" min="1">
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label for="servico-valor-unitario">Valor Unitário:</label>
+                        <input type="number" id="servico-valor-unitario" class="form-control" step="0.01" min="0">
+                    </div>
+                </div>
+
+                {# BOTÕES CRIAR PEÇA / CRIAR SERVIÇO #}
+                <div class="row mt-4">
+                    <div class="col-md-6 mb-3">
+                        <a href="{% url 'cadastrar_peca' %}" class="btn btn-outline-primary btn-block">Criar peça</a>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <a href="{% url 'cadastrar_servico' %}" class="btn btn-outline-primary btn-block">Criar serviço</a>
+                    </div>
+                </div>
+            </div>
+
+            {# COLUNA 3: LISTA DE PEÇAS E SERVIÇOS (Direita) #}
+            <div class="col-md-4"> 
+                <div class="card">
+                    <div class="card-header">
+                        Lista de Peças e Serviços
+                    </div>
+                    <ul class="list-group list-group-flush" id="items-list" style="min-height: 400px;"> {# Adicionado min-height para visualização #}
+                        {# Itens adicionados dinamicamente via JS aparecerão aqui #}
+                    </ul>
+                </div>
+                <div class="form-group mt-3">
+                    <label for="{{ manutencao_form.observacoes.id_for_label }}">Observações:</label>
+                    {{ manutencao_form.observacoes }}
+                    {% for error in manutencao_form.observacoes.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {# CAMPOS OCULTOS PARA OS FORMSETS (GERENCIADOS PELO JS) - SEM ALTERAÇÃO #}
+        <div style="display: none;">
+            {# peca_formset #}
+            <div id="peca-formset-container">
+                {{ peca_formset.management_form }}
+                <div id="empty-peca-form">
+                    <div class="form-row">
+                        <input type="hidden" name="peca-__prefix__-peca" id="id_peca-__prefix__-peca">
+                        <input type="hidden" name="peca-__prefix__-valor_unitario" id="id_peca-__prefix__-valor_unitario">
+                        <input type="hidden" name="peca-__prefix__-quantidade" id="id_peca-__prefix__-quantidade">
+                        <input type="hidden" name="peca-__prefix__-id" id="id_peca-__prefix__-id">
+                        <input type="hidden" name="peca-__prefix__-DELETE" id="id_peca-__prefix__-DELETE">
+                    </div>
+                </div>
+                {% for form in peca_formset.forms %}
+                    {% if form.instance.pk %}
+                        <div class="form-row">
+                            {{ form.peca }}
+                            {{ form.valor_unitario }}
+                            {{ form.quantidade }}
+                            {{ form.id }}
+                            {{ form.DELETE }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            {# servico_formset #}
+            <div id="servico-formset-container">
+                {{ servico_formset.management_form }}
+                <div id="empty-servico-form">
+                    <div class="form-row">
+                        <input type="hidden" name="servico-__prefix__-servico" id="id_servico-__prefix__-servico">
+                        <input type="hidden" name="servico-__prefix__-valor_unitario" id="id_servico-__prefix__-valor_unitario">
+                        <input type="hidden" name="servico-__prefix__-quantidade" id="id_servico-__prefix__-quantidade">
+                        <input type="hidden" name="servico-__prefix__-id" id="id_servico-__prefix__-id">
+                        <input type="hidden" name="servico-__prefix__-DELETE" id="id_servico-__prefix__-DELETE">
+                    </div>
+                </div>
+                {% for form in servico_formset.forms %}
+                    {% if form.instance.pk %}
+                        <div class="form-row">
+                            {{ form.servico }}
+                            {{ form.valor_unitario }}
+                            {{ form.quantidade }}
+                            {{ form.id }}
+                            {{ form.DELETE }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        {# NOVA SEÇÃO NO FINAL: ORÇAMENTO, VALE E VALOR TOTAL (AGORA TODOS UM AO LADO DO OUTRO) #}
+        <hr class="my-4">
+        <div class="row">
+            <div class="col-md-4 mb-3"> {# Orçamento #}
+                <div class="form-group">
+                    <label for="{{ manutencao_form.orcamento.id_for_label }}">Orçamento:</label>
+                    {{ manutencao_form.orcamento }}
+                    {% for error in manutencao_form.orcamento.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+            <div class="col-md-4 mb-3"> {# Vale #}
+                <div class="form-group">
+                    <label for="{{ manutencao_form.vale.id_for_label }}">Vale:</label>
+                    {{ manutencao_form.vale }}
+                    {% for error in manutencao_form.vale.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="display-valor-total">Valor Total:</label>
+                <div class="form-row">
+                    <!-- Campo visível à esquerda -->
+                    <div class="col">
+                        <input type="text" id="display-valor-total" class="form-control" readonly>
+                    </div>
+
+                    <!-- Campo real à direita (oculto ou pequeno) -->
+                    <div class="col-auto">
+                        <input type="hidden"
+                            name="{{ manutencao_form.valor_total.html_name }}"
+                            id="{{ manutencao_form.valor_total.id_for_label }}"
+                            value="{{ manutencao_form.valor_total.value }}">
+                    </div>
+                </div>
+                {% for error in manutencao_form.valor_total.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+
+        {# BOTÃO CADASTRAR MANUTENÇÃO #}
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary-custom">
+                <i class="fas fa-save"></i> Cadastrar
+            </button>
+        </div>
+    </form>
+
+{% endblock content %}
+
+{% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const itemsList = document.getElementById('items-list');
+            const mainValorTotalInput = document.getElementById('id_valor_total'); // O campo hidden real
+            const displayValorTotalInput = document.getElementById('display-valor-total'); // O campo de exibição
+            let totalAmount = 0;
+
+            // --- Gerenciamento de Formsets Dinâmicos ---
+            function getFormsetPrefixAndTotalFormsId(type) {
+                if (type === 'peca') return { prefix: 'peca', totalFormsId: '#id_peca-TOTAL_FORMS' };
+                if (type === 'servico') return { prefix: 'servico', totalFormsId: '#id_servico-TOTAL_FORMS' };
+                return null;
+            }
+
+            function addForm(type) {
+                const { prefix, totalFormsId } = getFormsetPrefixAndTotalFormsId(type);
+                const containerId = `#${type}-formset-container`;
+                const emptyFormId = `#empty-${type}-form`;
+
+                const container = document.querySelector(containerId);
+                const emptyFormTemplate = document.querySelector(emptyFormId);
+                const totalFormsInput = document.querySelector(totalFormsId);
+
+                if (!totalFormsInput || !emptyFormTemplate) {
+                    console.error(`Missing elements for formset type: ${type}. Check IDs: ${totalFormsId}, ${emptyFormId}`);
+                    return null;
+                }
+
+                let currentFormCount = parseInt(totalFormsInput.value);
+
+                const newForm = emptyFormTemplate.cloneNode(true);
+                newForm.style.display = ''; // Mostra o formulário clonado
+                newForm.id = ''; // Remove o ID do formulário de template para evitar duplicatas
+
+                // Atualiza os atributos 'name' e 'id' para o novo índice
+                // Substitui '__prefix__' por 'currentFormCount' em todos os atributos de nome e id
+                newForm.innerHTML = newForm.innerHTML.replace(new RegExp(`__prefix__`, 'g'), currentFormCount);
+                
+                // Garante que o ID do input hidden para o caso de clonar um form existente (no caso de usar o vazio como template) seja único
+                newForm.querySelectorAll('input, select, textarea').forEach(input => {
+                    if (input.type !== 'hidden' && input.type !== 'checkbox') {
+                        input.value = ''; // Limpa valor
+                    } else if (input.type === 'checkbox') {
+                        input.checked = false; // Desmarca checkbox
+                    } else if (input.tagName === 'SELECT') {
+                        // Reseta select para a primeira opção se houver, ou um valor vazio
+                        if (input.options.length > 0) {
+                            input.selectedIndex = 0;
+                        } else {
+                            input.value = ''; // Define um valor vazio se não houver opções
+                        }
+                    }
+                });
+
+                // Limpa hidden ID field e desmarca DELETE checkbox
+                const idInput = newForm.querySelector(`input[name="${prefix}-${currentFormCount}-id"]`); // Acessa pelo nome já atualizado
+                if (idInput) idInput.value = '';
+                const deleteCheckbox = newForm.querySelector(`input[name="${prefix}-${currentFormCount}-DELETE"]`);
+                if (deleteCheckbox) deleteCheckbox.checked = false;
+
+                container.appendChild(newForm);
+                totalFormsInput.value = currentFormCount + 1;
+
+                return { newForm, index: currentFormCount }; // Retorna o novo elemento de formulário e seu índice
+            }
+
+            // --- Funções para Adicionar/Remover Itens da Lista Visual e Oculta ---
+            function addItemToList(type, id, nome, quantidade, valorUnitario, formIndex, isExisting = false) {
+                const itemDiv = document.createElement('li');
+                itemDiv.className = 'list-group-item d-flex justify-content-between align-items-center';
+                itemDiv.dataset.type = type;
+                itemDiv.dataset.formIndex = formIndex; // Link to the hidden formset index
+
+                const textContent = `${type === 'peca' ? 'Peça' : 'Serviço'}: ${nome} - Qtd: ${quantidade} - V.Unit: R$ ${parseFloat(valorUnitario).toFixed(2)}`;
+                itemDiv.innerHTML = `
+                    <span>${textContent}</span>
+                    <button type="button" class="btn btn-sm btn-danger remove-item">X</button>
+                `;
+
+                itemsList.appendChild(itemDiv);
+
+                // Update total amount
+                totalAmount += (parseFloat(quantidade) * parseFloat(valorUnitario));
+                updateTotalDisplay();
+
+                // Bind remove button
+                itemDiv.querySelector('.remove-item').addEventListener('click', function() {
+                    removeItem(itemDiv, formIndex, quantidade, valorUnitario, isExisting);
+                });
+            }
+
+            function removeItem(itemDiv, formIndex, quantidade, valorUnitario, isExisting) {
+                // Encontra o formulário oculto correspondente no formset
+                const type = itemDiv.dataset.type;
+                const { prefix } = getFormsetPrefixAndTotalFormsId(type);
+                
+                // Seletor mais robusto para encontrar o form-row oculto
+                const hiddenFormElement = document.querySelector(`#${type}-formset-container div.form-row:has(input[name="${prefix}-${formIndex}-id"])`);
+
+                if (isExisting && hiddenFormElement) {
+                    // Se for um item existente (já no banco de dados), marca seu checkbox DELETE
+                    const deleteCheckbox = hiddenFormElement.querySelector(`input[name="${prefix}-${formIndex}-DELETE"]`);
+                    if (deleteCheckbox) deleteCheckbox.checked = true;
+                    hiddenFormElement.style.display = 'none'; // Oculta o formulário visivelmente
+                } else if (hiddenFormElement) {
+                    // Se for um item recém-adicionado (não salvo ainda), remove do DOM
+                    hiddenFormElement.remove();
+                    const totalFormsInput = document.querySelector(`#id_${prefix}-TOTAL_FORMS`);
+                    if (totalFormsInput) {
+                        totalFormsInput.value = parseInt(totalFormsInput.value) - 1;
+                    }
+                }
+
+                // Remove da lista visual
+                itemDiv.remove();
+
+                // Atualiza o valor total
+                totalAmount -= (parseFloat(quantidade) * parseFloat(valorUnitario));
+                updateTotalDisplay();
+            }
+
+            function updateTotalDisplay() {
+                displayValorTotalInput.value = `R$ ${totalAmount.toFixed(2)}`;
+                mainValorTotalInput.value = totalAmount.toFixed(2); // Atualiza o campo oculto
+            }
+
+            // --- Event Listeners para botões Adicionar Peça/Serviço ---
+            document.getElementById('add-peca-btn').addEventListener('click', function() {
+                const pecaSelect = document.getElementById('peca-select');
+                const pecaId = pecaSelect.value;
+                if (!pecaId) {
+                    alert('Por favor, selecione uma peça.');
+                    return;
+                }
+                const pecaNome = pecaSelect.options[pecaSelect.selectedIndex].dataset.nome;
+                const quantidadeInput = document.getElementById('peca-quantidade');
+                const quantidade = quantidadeInput.value;
+                const valorUnitarioInput = document.getElementById('peca-valor-unitario');
+                const valorUnitario = valorUnitarioInput.value;
+
+                if (quantidade > 0 && valorUnitario >= 0) {
+                    const { newForm, index } = addForm('peca');
+                    if (newForm) {
+                        newForm.querySelector(`input[name="peca-${index}-peca"]`).value = pecaId;
+                        newForm.querySelector(`input[name="peca-${index}-quantidade"]`).value = quantidade;
+                        newForm.querySelector(`input[name="peca-${index}-valor_unitario"]`).value = valorUnitario;
+
+                        addItemToList('peca', pecaId, pecaNome, quantidade, valorUnitario, index);
+
+                        pecaSelect.selectedIndex = 0;
+                        quantidadeInput.value = 1;
+                        valorUnitarioInput.value = '';
+                    }
+                } else {
+                    alert('Por favor, insira uma quantidade e valor unitário válidos.');
+                }
+            });
+
+            document.getElementById('add-servico-btn').addEventListener('click', function() {
+                const servicoSelect = document.getElementById('servico-select');
+                const servicoId = servicoSelect.value;
+                if (!servicoId) {
+                    alert('Por favor, selecione um serviço.');
+                    return;
+                }
+                const servicoNome = servicoSelect.options[servicoSelect.selectedIndex].dataset.nome;
+                const quantidadeInput = document.getElementById('servico-quantidade');
+                const quantidade = quantidadeInput.value;
+                const valorUnitarioInput = document.getElementById('servico-valor-unitario');
+                const valorUnitario = valorUnitarioInput.value;
+
+                if (quantidade > 0 && valorUnitario >= 0) {
+                    const { newForm, index } = addForm('servico');
+                    if (newForm) {
+                        newForm.querySelector(`input[name="servico-${index}-servico"]`).value = servicoId;
+                        newForm.querySelector(`input[name="servico-${index}-quantidade"]`).value = quantidade;
+                        newForm.querySelector(`input[name="servico-${index}-valor_unitario"]`).value = valorUnitario;
+
+                        addItemToList('servico', servicoId, servicoNome, quantidade, valorUnitario, index);
+
+                        servicoSelect.selectedIndex = 0;
+                        quantidadeInput.value = 1;
+                        valorUnitarioInput.value = '';
+                    }
+                } else {
+                    alert('Por favor, insira uma quantidade e valor unitário válidos.');
+                }
+            });
+
+            // --- Carrega itens existentes ao carregar a página (para modo de edição) ---
+            function loadExistingItems() {
+                // Carregar Peças existentes
+                document.querySelectorAll('#peca-formset-container div.form-row').forEach((row, i) => {
+                    const deleteInput = row.querySelector(`input[name="peca-${i}-DELETE"]`)?.checked;
+                    const idInput = row.querySelector(`input[name="peca-${i}-id"]`);
+                    const pecaInput = row.querySelector(`input[name="peca-${i}-peca"]`);
+
+                    if (idInput && idInput.value && pecaInput && !deleteInput) {
+                        const pecaId = pecaInput.value;
+                        const pecaNome = document.querySelector(`#peca-select option[value="${pecaId}"]`)?.dataset.nome;
+                        const quantidade = row.querySelector(`input[name="peca-${i}-quantidade"]`)?.value;
+                        const valorUnitario = row.querySelector(`input[name="peca-${i}-valor_unitario"]`)?.value;
+                        
+                        if (pecaNome && quantidade && valorUnitario) {
+                            addItemToList('peca', pecaId, pecaNome, quantidade, valorUnitario, i, true);
+                        }
+                    }
+                });
+
+                // Carregar Serviços existentes
+                document.querySelectorAll('#servico-formset-container div.form-row').forEach((row, i) => {
+                    const deleteInput = row.querySelector(`input[name="servico-${i}-DELETE"]`)?.checked;
+                    const idInput = row.querySelector(`input[name="servico-${i}-id"]`);
+                    const servicoInput = row.querySelector(`input[name="servico-${i}-servico"]`);
+
+                    if (idInput && idInput.value && servicoInput && !deleteInput) {
+                        const servicoId = servicoInput.value;
+                        const servicoNome = document.querySelector(`#servico-select option[value="${servicoId}"]`)?.dataset.nome;
+                        const quantidade = row.querySelector(`input[name="servico-${i}-quantidade"]`)?.value;
+                        const valorUnitario = row.querySelector(`input[name="servico-${i}-valor_unitario"]`)?.value;
+
+                        if (servicoNome && quantidade && valorUnitario) {
+                            addItemToList('servico', servicoId, servicoNome, quantidade, valorUnitario, i, true);
+                        }
+                    }
+                });
+            }
+
+            // Chamar loadExistingItems para edição (apenas se for edição)
+            // Você pode adicionar uma condição aqui baseada na URL ou em uma variável do contexto Django
+            // Ex: if (window.location.pathname.includes('/editar/')) { loadExistingItems(); }
+            // Ou se você passar uma flag booleana da view: {% if form.instance.pk %}loadExistingItems();{% endif %}
+        });
+    </script>
+{% endblock extra_js %}

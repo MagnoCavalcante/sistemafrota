@@ -1,0 +1,64 @@
+FROM python:3.11-slim as builder
+
+# Definir variáveis de ambiente
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+# Instalar dependências do sistema
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    postgresql-client \
+    libpq-dev \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Criar e ativar ambiente virtual
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Instalar dependências Python
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Estágio final
+FROM python:3.11-slim
+
+# Copiar ambiente virtual do builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Criar usuário não-root
+RUN useradd -m -s /bin/bash app_user
+
+# Instalar dependências de runtime
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Definir diretório de trabalho
+WORKDIR /app
+
+# Copiar arquivos do projeto
+COPY --chown=app_user:app_user . .
+
+# Tornar o entrypoint executável
+RUN chmod +x entrypoint.sh
+
+# Coletar arquivos estáticos
+RUN python manage.py collectstatic --noinput
+
+# Configurar permissões
+RUN chown -R app_user:app_user /app
+
+# Mudar para usuário não-root
+USER app_user
+
+# Expor porta
+EXPOSE 8000
+
+# Definir entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"] 

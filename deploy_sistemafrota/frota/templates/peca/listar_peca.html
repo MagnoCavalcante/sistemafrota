@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Lista de Peças</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for peca in pecas %}
+                <tr>
+                    <td>{{ peca.nome }}</td>
+                    <td>
+                        <a href="{% url 'editar_peca' peca.id %}" class="btn btn-primary btn-sm">Editar</a>
+                        <a href="{% url 'excluir_peca' peca.id %}" class="btn btn-danger btn-sm">Excluir</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'cadastrar_peca' %}" class="btn btn-primary">Cadastrar Nova Peça</a>
+{% endblock %}

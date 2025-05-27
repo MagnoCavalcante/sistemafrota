@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container mt-2" style="max-width: 2000px;">
+        <div class="text-white p-2 rounded" style="background-color: #670474;">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
+                <h2 class="mb-3 mb-md-0">Painel de Veículos</h2>
+                <a href="{% url 'cadastrar_veiculo' %}" class="btn btn-secondary-custom">
+                    <i class="fas fa-plus-circle"></i> Cadastro Veículos
+                </a>
+            </div>
+        </div>
+
+        <form method="post" class="mb-3">
+            {% csrf_token %}
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Buscar por nome..." value="{{ request.post.q }}">
+                <button class="btn btn-primary-custom" type="submit">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Placa</th>
+                        <th>Modelo</th>
+                        <th>Ano</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for veiculo in veiculos %}
+                        <tr>
+                            <td>{{ veiculo.placa }}</td>
+                            <td>{{ veiculo.modelo }}</td>
+                            <td>{{ veiculo.ano }}</td>
+                            <td>
+                                {% if veiculo.ativo %}
+                                    <span class="badge bg-success">Ativo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'editar_veiculo' veiculo.id %}" class="btn btn-primary-custom btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'excluir_veiculo' veiculo.id %}" class="btn btn-secondary-custom btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

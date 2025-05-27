@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: magnocavalcante/sistemafrota:latest
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      - db
+    environment:
+      - DEBUG=1
+      - SECRET_KEY=your-secret-key-here
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/sistemafrota
+      - ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+
+  db:
+    image: postgres:15
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=sistemafrota
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume: 

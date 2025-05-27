@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-2" style="max-width: 2000px;">
+    <div class="text-white p-2 rounded" style="background-color: #670474;">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
+            <h2 class="mb-3 mb-md-0">Controle de Multas</h2>
+            <a href="{% url 'cadastrar_multa' %}" class="btn btn-secondary-custom">
+                <i class="fas fa-plus-circle"></i> Nova Multa
+            </a>
+        </div>
+    </div>
+
+    <!-- Campo de busca -->
+    <form method="post" class="mb-3">
+        {% csrf_token %}
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Buscar por placa ou motorista..." value="{{ request.POST.q }}">
+            <button class="btn btn-primary-custom" type="submit">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Placa</th>
+                    <th>Motorista</th>
+                    <th>Tipo</th>
+                    <th>Local</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for multa in multas %}
+                    <tr>
+                        <td>{{ multa.data|date:"d/m/Y" }}</td>
+                        <td>{{ multa.veiculo.placa }}</td>
+                        <td>{{ multa.motorista.nome }}</td>
+                        <td>{{ multa.get_tipo_display }}</td>
+                        <td>{{ multa.local }}</td>
+                        <td>R$ {{ multa.valor|floatformat:2 }}</td>
+                        <td>
+                            {% if multa.paga %}
+                                <span class="badge bg-success">Paga</span>
+                            {% else %}
+                                <span class="badge bg-danger">Pendente</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex gap-2 justify-content-center">
+                                <a href="{% url 'editar_multa' multa.id %}" class="btn btn-primary-custom btn-sm" data-bs-toggle="tooltip" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'excluir_multa' multa.id %}" class="btn btn-secondary-custom btn-sm" data-bs-toggle="tooltip" title="Excluir">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">Nenhuma multa encontrada.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %} 

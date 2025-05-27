@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-2" style="max-width: 2000px;">
+    <div class="text-white p-2 rounded" style="background-color: #670474;">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
+            <h2 class="mb-3 mb-md-0">Excluir Multa</h2>
+            <a href="{% url 'listar_multas' %}" class="btn btn-secondary-custom">
+                <i class="fas fa-list"></i> Ver Multas
+            </a>
+        </div>
+    </div>
+
+    <div class="card card-body mt-3">
+        <h5>Tem certeza que deseja excluir esta multa?</h5>
+        
+        <div class="mt-3">
+            <p><strong>Veículo:</strong> {{ multa.veiculo.placa }} - {{ multa.veiculo.modelo }}</p>
+            <p><strong>Motorista:</strong> {{ multa.motorista.nome }}</p>
+            <p><strong>Data:</strong> {{ multa.data|date:"d/m/Y" }}</p>
+            <p><strong>Tipo:</strong> {{ multa.get_tipo_display }}</p>
+            <p><strong>Local:</strong> {{ multa.local }}</p>
+            <p><strong>Valor:</strong> R$ {{ multa.valor|floatformat:2 }}</p>
+            <p><strong>Status:</strong> {% if multa.paga %}Paga{% else %}Pendente{% endif %}</p>
+        </div>
+
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Confirmar Exclusão
+                </button>
+                <a href="{% url 'listar_multas' %}" class="btn btn-secondary-custom">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

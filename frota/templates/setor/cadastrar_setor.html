@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container mt-4" style="max-width: 2000px;">
+            <div class="text-white p-3 rounded" style="background-color: #670474;">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
+                    <h2 class="mb-3 mb-md-0">Cadastro de Setores</h2>
+                    {# Botão - opcional #}
+                    <a href="{% url 'listar_setores' %}" class="btn btn-secondary">Lista de Setores</a>
+                </div>
+            </div>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="text-white p-3 rounded" style="background-color: #3a0341;">Cadastrar</button>
+    </form>
+{% endblock %}

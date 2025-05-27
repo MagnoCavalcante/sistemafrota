@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4" style="max-width: 600px;">
+    <h2 class="mb-4">Adicionar Novo Usuário</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="username">Nome de usuário</label>
+            <input type="text" name="username" id="username" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="senha">Senha</label>
+            <input type="password" name="senha" id="senha" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="grupo">Grupo</label>
+            <select name="grupo" id="grupo" class="form-control" required>
+                {% for grupo in grupos %}
+                    <option value="{{ grupo.name }}">{{ grupo.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn text-white" style="background-color: #670474;">Criar Usuário</button>
+    </form>
+</div>
+
+{% if request.user.is_superuser %}
+    <a href="{% url 'adicionar_usuario' %}" class="btn text-white" style="background-color: #670474;">
+        <i class="bi bi-person-plus"></i> Adicionar Usuário
+    </a>
+{% endif %}
+{% endblock %}

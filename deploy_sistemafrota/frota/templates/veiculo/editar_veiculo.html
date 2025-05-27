@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<style>
+    .campo-form {
+        width: 100%;
+        max-width: 400px;
+        text-align: start;
+    }
+</style>
+
+<div class="container mt-2" style="max-width: 2000px;">
+    <div class="text-white p-2 rounded" style="background-color: #670474;">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
+            <h2 class="mb-3 mb-md-0">Editar Veículo</h2>
+            <a href="{% url 'listar_veiculos' %}" class="btn btn-secondary-custom">
+                <i class="fas fa-list"></i> Ver Veículos
+            </a>
+        </div>
+    </div>
+
+    <div class="card card-body mt-3">
+        <form method="post">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="form-group">
+                        <label for="{{ form.placa.id_for_label }}">Placa:</label>
+                        {{ form.placa|add_class:"form-control w-100" }}
+                        {% for error in form.placa.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-group">
+                        <label for="{{ form.modelo.id_for_label }}">Modelo:</label>
+                        {{ form.modelo|add_class:"form-control w-100" }}
+                        {% for error in form.modelo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="form-group">
+                        <label for="{{ form.combustivel.id_for_label }}">Combustível:</label>
+                        {{ form.combustivel|add_class:"form-control w-100" }}
+                        {% for error in form.combustivel.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-group">
+                        <label for="{{ form.motorista.id_for_label }}">Motorista:</label>
+                        {{ form.motorista|add_class:"form-control w-100" }}
+                        {% for error in form.motorista.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="form-group">
+                        <label for="{{ form.setor.id_for_label }}">Setor:</label>
+                        {{ form.setor|add_class:"form-control w-100" }}
+                        {% for error in form.setor.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-group">
+                        <label for="{{ form.valor_fipe.id_for_label }}">Valor FIPE:</label>
+                        {{ form.valor_fipe|add_class:"form-control w-100" }}
+                        {% for error in form.valor_fipe.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="form-group form-check">
+                        {{ form.ativo }}
+                        <label class="form-check-label" for="{{ form.ativo.id_for_label }}">Ativo</label>
+                        {% for error in form.ativo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-group">
+                        <label for="{{ form.motivo_inativo.id_for_label }}">Motivo Inativo:</label>
+                        {{ form.motivo_inativo|add_class:"form-control w-100" }}
+                        {% for error in form.motivo_inativo.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <div class="form-group">
+                        <label for="{{ form.observacoes.id_for_label }}">Observações:</label>
+                        {{ form.observacoes|add_class:"form-control w-100" }}
+                        {% for error in form.observacoes.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary-custom">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
+                <a href="{% url 'listar_veiculos' %}" class="btn btn-secondary-custom">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const valorInput = document.getElementById('id_valor_fipe');
+
+    valorInput.addEventListener('input', function () {
+        let valor = this.value.replace(/\D/g, '');
+
+        if (valor.length < 3) {
+            valor = valor.padStart(3, '0');
+        }
+        valor = valor.replace(/^0+(?!$)/, '');
+
+        const parteInteira = valor.slice(0, valor.length - 2);
+        const parteDecimal = valor.slice(-2);
+        const valorFormatado = `${parteInteira},${parteDecimal}`;
+
+        this.value = valorFormatado;
+    });
+
+    // Antes de enviar o formulário, converte para o formato que o Django espera
+    const form = valorInput.closest('form');
+    if (form) {
+        form.addEventListener('submit', function () {
+            const valor = valorInput.value.replace(/\./g, '').replace(',', '.');
+            valorInput.value = valor;
+        });
+    }
+</script>
+
+{% endblock %}
