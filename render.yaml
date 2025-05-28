@@ -8,11 +8,11 @@ services:
       - frota.mov.pro.br
     envVars:
       - key: DEBUG
-        value: 0
+        value: 1
       - key: SECRET_KEY
         generateValue: true
       - key: ALLOWED_HOSTS
-        value: ".onrender.com frota.mov.pro.br localhost 127.0.0.1"
+        value: "*"
       - key: WEB_CONCURRENCY
         value: 4
       - key: PORT
@@ -21,6 +21,19 @@ services:
         fromDatabase:
           name: sistemafrota-db
           property: connectionString
+      - key: DATABASE_HOST
+        fromDatabase:
+          name: sistemafrota-db
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: sistemafrota-db
+          property: port
+      - key: DJANGO_SETTINGS_MODULE
+        value: sistemafrota.settings
+      - key: PYTHONUNBUFFERED
+        value: 1
+    healthCheckPath: /admin/
     
 databases:
   - name: sistemafrota-db
