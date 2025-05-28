@@ -3,9 +3,11 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Configuração do ambiente
+# Modifique a seção de variáveis de ambiente para incluir
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PORT=10000
 
 # Instala as dependências necessárias
 RUN apt-get update && \
@@ -33,7 +35,8 @@ RUN mkdir -p /app/staticfiles /app/media && \
 RUN python manage.py collectstatic --noinput
 
 # Expõe a porta que o gunicorn vai usar
-EXPOSE ${PORT:-10000}
+# Modifique o EXPOSE para usar a variável PORT
+EXPOSE ${PORT}
 
-# Define o script de entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"] 
+# Modifique o ENTRYPOINT para incluir o gunicorn
+ENTRYPOINT ["/app/entrypoint.sh", "gunicorn", "--bind", "0.0.0.0:${PORT}", "sistemafrota.wsgi:application"]

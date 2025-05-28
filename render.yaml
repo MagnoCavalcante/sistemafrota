@@ -4,82 +4,29 @@ services:
     env: docker
     region: oregon
     plan: free
-    buildCommand: docker build -t sistemafrota .
-    startCommand: ./entrypoint.sh
     healthCheckPath: /
-    healthCheckTimeout: 300
-    autoDeploy: true
+    healthCheckTimeout: 100
     envVars:
-      - key: DEBUG
-        value: 0
-      - key: SECRET_KEY
-        generateValue: true
-      - key: ALLOWED_HOSTS
-        value: "sistemafrota-4.onrender.com"
-      - key: WEB_CONCURRENCY
-        value: 2
-      - key: PORT
-        value: 10000
       - key: DATABASE_URL
         fromDatabase:
           name: sistemafrota-db
           property: connectionString
-      - key: DATABASE_SSL_MODE
-        value: "require"
-      - key: DATABASE_CONN_MAX_AGE
-        value: 0
-      - key: DATABASE_POOL_MIN_CONNECTIONS
-        value: 1
-      - key: DATABASE_POOL_MAX_CONNECTIONS
-        value: 5
-      - key: DATABASE_TIMEOUT
-        value: 60
-      - key: DATABASE_CONNECT_TIMEOUT
-        value: 120
+      - key: SECRET_KEY
+        generateValue: true
       - key: DJANGO_SETTINGS_MODULE
         value: sistemafrota.settings
-      - key: PYTHONUNBUFFERED
-        value: 1
-      - key: DJANGO_DISABLE_COLLECTSTATIC
-        value: 0
-      - key: DJANGO_CONN_MAX_AGE
-        value: 60
-      - key: DJANGO_TIMEOUT
-        value: 180
-      - key: DJANGO_USE_GZIP
-        value: 1
-      - key: DJANGO_CACHE_MIDDLEWARE
-        value: 1
-      - key: DJANGO_SECURE_SSL_REDIRECT
-        value: 1
-      - key: DJANGO_SESSION_ENGINE
-        value: "django.contrib.sessions.backends.cached_db"
-      - key: GUNICORN_TIMEOUT
-        value: 180
-      - key: GUNICORN_MAX_REQUESTS
-        value: 1000
-      - key: GUNICORN_MAX_REQUESTS_JITTER
-        value: 50
-      - key: GUNICORN_WORKER_CLASS
-        value: "gthread"
-      - key: GUNICORN_THREADS
-        value: 4
-      - key: GUNICORN_KEEPALIVE
-        value: 65
-    disk:
-      name: sistemafrota-data
-      mountPath: /data
-      sizeGB: 1
-    scaling:
-      minInstances: 1
-      maxInstances: 1
-      targetMemoryPercent: 80
-      targetCPUPercent: 80
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: DEBUG
+        value: "0"
+      - key: DATABASE_SSL_MODE
+        value: require
+      - key: PORT
+        value: "10000"
 
 databases:
   - name: sistemafrota-db
-    databaseName: sistemafrota
-    user: sistemafrota_user
+    region: oregon
     plan: free
     ipAllowList: []
     postgresMajorVersion: 15
