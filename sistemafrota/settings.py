@@ -89,14 +89,12 @@ WSGI_APPLICATION = 'sistemafrota.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        'CONN_MAX_AGE': int(os.environ.get('DJANGO_CONN_MAX_AGE', 60)),
-        'OPTIONS': {
-            'timeout': 30,
-        }
-    }
+    'default': dj_database_url.config(
+        default='sqlite:////' + str(BASE_DIR / 'db.sqlite3'),
+        conn_max_age=0,  # em segundos
+        conn_health_checks=True,
+        ssl_require=True
+    )
 }
 
 # Configuração condicional para PostgreSQL
