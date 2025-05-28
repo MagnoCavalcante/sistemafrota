@@ -12,7 +12,7 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: ALLOWED_HOSTS
-        value: frota.mov.pro.br localhost 127.0.0.1 sistemafrota-3.onrender.com
+        value: ".onrender.com frota.mov.pro.br localhost 127.0.0.1"
       - key: WEB_CONCURRENCY
         value: 4
       - key: PORT
