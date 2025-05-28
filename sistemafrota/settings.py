@@ -12,20 +12,14 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
+import dj_database_url
 from dotenv import load_dotenv
 
 # Carrega as variáveis de ambiente do arquivo .env
 load_dotenv()
 
-# Importação do dj-database-url
-try:
-    import dj_database_url
-except ImportError:
-    dj_database_url = None
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -36,7 +30,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-9_z=!_3-j$0e0c)i0n8t-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(os.environ.get('DEBUG', '1'))
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost 127.0.0.1 [::1]').split(' ')
+ALLOWED_HOSTS = ['sistemafrota-3.onrender.com', '127.0.0.1', 'localhost', 'frota.mov.pro.br']
 
 
 # Application definition
@@ -48,22 +42,24 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'frota',
+    'frota.apps.FrotaConfig',  # Usando a configuração específica do app
     'widget_tweaks',
     'corsheaders',
+    'whitenoise.runserver_nostatic',  # Otimização para desenvolvimento
 ]
 
 MIDDLEWARE = [
-    'django.middleware.locale.LocaleMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
 ]
 
 ROOT_URLCONF = 'sistemafrota.urls'
@@ -71,7 +67,7 @@ ROOT_URLCONF = 'sistemafrota.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -79,6 +75,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
             ],
         },
     },
@@ -94,12 +92,21 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'CONN_MAX_AGE': int(os.environ.get('DJANGO_CONN_MAX_AGE', 60)),
+        'OPTIONS': {
+            'timeout': 30,
+        }
     }
 }
 
-# Configuração condicional para PostgreSQL (se DATABASE_URL estiver definido)
-if os.environ.get('DATABASE_URL') and dj_database_url:
-    DATABASES['default'] = dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+# Configuração condicional para PostgreSQL
+if os.environ.get('DATABASE_URL'):
+    DATABASES['default'] = dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=int(os.environ.get('DJANGO_CONN_MAX_AGE', 60)),
+        conn_health_checks=True,
+        ssl_require=True,
+    )
 
 
 # Password validation
@@ -139,14 +146,18 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    os.path.join(BASE_DIR, "static"),
 ]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+WHITENOISE_MAX_AGE = 31536000  # 1 ano em segundos
 
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -166,27 +177,64 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', '')
+EMAIL_TIMEOUT = 30  # 30 segundos timeout
 
-# Configuração do Whitenoise
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+# Cache settings com fallback para desenvolvimento
+if DEBUG:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+            'TIMEOUT': 300,  # 5 minutos
+            'OPTIONS': {
+                'MAX_ENTRIES': 1000,
+                'CULL_FREQUENCY': 3,
+            },
+        }
+    }
+
+# Cache middleware settings
+CACHE_MIDDLEWARE_SECONDS = 300
+CACHE_MIDDLEWARE_KEY_PREFIX = 'sistemafrota'
+
+if not DEBUG:
+    MIDDLEWARE.insert(0, 'django.middleware.cache.UpdateCacheMiddleware')
+    MIDDLEWARE.append('django.middleware.cache.FetchFromCacheMiddleware')
+
+# Configurações de segurança
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = bool(int(os.environ.get('DJANGO_SECURE_SSL_REDIRECT', '1')))
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# Session settings
+SESSION_ENGINE = os.environ.get('DJANGO_SESSION_ENGINE', 'django.contrib.sessions.backends.cached_db')
+SESSION_COOKIE_AGE = 86400  # 24 horas
+SESSION_SAVE_EVERY_REQUEST = True
 
 # Configurações de CORS
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "https://sistemafrota-3.onrender.com",
-    "http://sistemafrota-3.onrender.com",
     "https://frota.mov.pro.br",
-    "http://frota.mov.pro.br",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
 ]
 
-# Configurações de segurança
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = False
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
 CSRF_TRUSTED_ORIGINS = [
     "https://sistemafrota-3.onrender.com",
     "https://frota.mov.pro.br",
@@ -196,9 +244,16 @@ CSRF_TRUSTED_ORIGINS = [
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
     'root': {
@@ -208,8 +263,24 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
             'propagate': True,
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
         },
     },
 }
+
+# Configurações adicionais de segurança
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+]
+
+# Configurações de performance
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000

@@ -21,14 +21,6 @@ services:
         fromDatabase:
           name: sistemafrota-db
           property: connectionString
-      - key: DATABASE_HOST
-        fromDatabase:
-          name: sistemafrota-db
-          property: host
-      - key: DATABASE_PORT
-        fromDatabase:
-          name: sistemafrota-db
-          property: port
       - key: DJANGO_SETTINGS_MODULE
         value: sistemafrota.settings
       - key: PYTHONUNBUFFERED
@@ -65,4 +57,5 @@ databases:
   - name: sistemafrota-db
     databaseName: sistemafrota
     user: sistemafrota_user
-    plan: free 
+    plan: free
+    ipAllowList: [] 
