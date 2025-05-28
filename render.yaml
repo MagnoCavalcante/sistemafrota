@@ -6,13 +6,18 @@ services:
     plan: free
     domains:
       - frota.mov.pro.br
+    buildCommand: docker build -t sistemafrota .
+    startCommand: ./entrypoint.sh
+    healthCheckPath: /
+    healthCheckTimeout: 180
+    autoDeploy: true
     envVars:
       - key: DEBUG
-        value: 1
+        value: 0
       - key: SECRET_KEY
         generateValue: true
       - key: ALLOWED_HOSTS
-        value: "*"
+        value: "sistemafrota-4.onrender.com,frota.mov.pro.br"
       - key: WEB_CONCURRENCY
         value: 2
       - key: PORT
@@ -48,14 +53,23 @@ services:
       - key: GUNICORN_WORKER_CLASS
         value: "gthread"
       - key: GUNICORN_THREADS
-        value: 3
-    healthCheckPath: /
-    healthCheckTimeout: 180
-    healthCheckContents: ""
-    
+        value: 4
+      - key: GUNICORN_KEEPALIVE
+        value: 65
+    disk:
+      name: sistemafrota-data
+      mountPath: /data
+      sizeGB: 1
+    scaling:
+      minInstances: 1
+      maxInstances: 1
+      targetMemoryPercent: 80
+      targetCPUPercent: 80
+
 databases:
   - name: sistemafrota-db
     databaseName: sistemafrota
     user: sistemafrota_user
     plan: free
-    ipAllowList: [] 
+    ipAllowList: []
+    postgresMajorVersion: 15 

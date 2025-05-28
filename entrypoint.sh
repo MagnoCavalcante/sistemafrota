@@ -6,34 +6,54 @@ log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S %Z')] $@"
 }
 
-# Extrai host e porta do DATABASE_URL se DATABASE_HOST não estiver definido
-if [ -z "$DATABASE_HOST" ] && [ ! -z "$DATABASE_URL" ]; then
-    # Exemplo de DATABASE_URL: postgres://user:pass@host:5432/dbname
-    DATABASE_HOST=$(echo $DATABASE_URL | awk -F[@/] '{print $4}' | cut -d':' -f1)
-    DATABASE_PORT=$(echo $DATABASE_URL | awk -F[@/:] '{print $5}')
-fi
+# Função para extrair informações do DATABASE_URL
+parse_db_url() {
+    if [ ! -z "$DATABASE_URL" ]; then
+        # Remove 'postgres://' ou 'postgresql://' do início
+        local tmp_url=${DATABASE_URL#*://}
+        # Extrai usuário:senha
+        local userpass=${tmp_url%%@*}
+        # Extrai host:porta/dbname
+        local hostportdb=${tmp_url#*@}
+        # Extrai host:porta
+        local hostport=${hostportdb%/*}
+        # Extrai host
+        DATABASE_HOST=${hostport%:*}
+        # Extrai porta
+        DATABASE_PORT=${hostport#*:}
+        log "Extracted database host: $DATABASE_HOST, port: $DATABASE_PORT"
+    else
+        log "WARNING: DATABASE_URL not set"
+    fi
+}
+
+# Extrai informações do banco de dados
+parse_db_url
 
 # Define valores padrão se ainda não estiverem definidos
 DATABASE_HOST=${DATABASE_HOST:-localhost}
 DATABASE_PORT=${DATABASE_PORT:-5432}
 
-log "Waiting for database at $DATABASE_HOST:$DATABASE_PORT..."
+log "Attempting to connect to database at $DATABASE_HOST:$DATABASE_PORT..."
 
-# Tenta conectar ao banco de dados
-max_tries=30
+# Tenta conectar ao banco de dados com timeout maior
+max_tries=60  # Aumentado para 60 tentativas
 count=0
 while [ $count -lt $max_tries ]; do
-    if nc -z $DATABASE_HOST $DATABASE_PORT; then
-        log "Database is up!"
+    if nc -z -w 5 $DATABASE_HOST $DATABASE_PORT 2>/dev/null; then
+        log "Successfully connected to database!"
         break
     fi
     count=$((count + 1))
-    log "Waiting for database... ($count/$max_tries)"
-    sleep 2
+    log "Waiting for database... ($count/$max_tries) - Host: $DATABASE_HOST, Port: $DATABASE_PORT"
+    sleep 5  # Aumentado para 5 segundos
 done
 
 if [ $count -eq $max_tries ]; then
     log "Error: Could not connect to database after $max_tries attempts"
+    log "Database URL: ${DATABASE_URL//:*@/:****@}"  # Log URL mascarando a senha
+    log "Host: $DATABASE_HOST"
+    log "Port: $DATABASE_PORT"
     exit 1
 fi
 
@@ -52,24 +72,28 @@ python manage.py collectstatic --noinput || {
 }
 
 # Configura o Gunicorn
-GUNICORN_WORKERS=${WEB_CONCURRENCY:-4}
-GUNICORN_THREADS=${GUNICORN_THREADS:-3}
-GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-120}
+GUNICORN_WORKERS=${WEB_CONCURRENCY:-2}  # Reduzido para 2 workers
+GUNICORN_THREADS=${GUNICORN_THREADS:-4}  # Aumentado para 4 threads
+GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-180}  # Aumentado para 180 segundos
 GUNICORN_MAX_REQUESTS=${GUNICORN_MAX_REQUESTS:-1000}
 GUNICORN_MAX_REQUESTS_JITTER=${GUNICORN_MAX_REQUESTS_JITTER:-50}
+GUNICORN_KEEPALIVE=${GUNICORN_KEEPALIVE:-65}  # Adicionado keepalive
 
-log "Starting Gunicorn with $GUNICORN_WORKERS workers..."
+log "Starting Gunicorn with $GUNICORN_WORKERS workers and $GUNICORN_THREADS threads..."
 exec gunicorn sistemafrota.wsgi:application \
     --bind 0.0.0.0:${PORT:-10000} \
     --workers $GUNICORN_WORKERS \
     --threads $GUNICORN_THREADS \
     --worker-class=gthread \
     --worker-tmp-dir=/dev/shm \
-    --log-level=info \
+    --log-level=debug \
     --access-logfile=- \
     --error-logfile=- \
     --timeout $GUNICORN_TIMEOUT \
+    --keep-alive $GUNICORN_KEEPALIVE \
     --max-requests $GUNICORN_MAX_REQUESTS \
     --max-requests-jitter $GUNICORN_MAX_REQUESTS_JITTER \
     --capture-output \
-    --enable-stdio-inheritance 
+    --enable-stdio-inheritance \
+    --graceful-timeout 180 \
+    --preload 
