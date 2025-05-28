@@ -102,7 +102,7 @@ GUNICORN_MAX_REQUESTS_JITTER=${GUNICORN_MAX_REQUESTS_JITTER:-50}
 GUNICORN_KEEPALIVE=${GUNICORN_KEEPALIVE:-65}
 
 log "Starting Gunicorn with $GUNICORN_WORKERS workers and $GUNICORN_THREADS threads..."
-exec gunicorn sistemafrota.wsgi:application \
+gunicorn sistemafrota.wsgi:application \
     --bind 0.0.0.0:${PORT:-10000} \
     --workers $GUNICORN_WORKERS \
     --threads $GUNICORN_THREADS \
@@ -118,4 +118,7 @@ exec gunicorn sistemafrota.wsgi:application \
     --capture-output \
     --enable-stdio-inheritance \
     --graceful-timeout 180 \
-    --preload 
+    --preload || {
+        log "ERROR: Gunicorn failed to start"
+        exit 1
+} 
