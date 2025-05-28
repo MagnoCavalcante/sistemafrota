@@ -59,6 +59,11 @@ done
 
 if [ $count -eq $max_tries ]; then
     log "ERROR: Could not connect to database after $max_tries attempts"
+    log "Database connection details:"
+    log "Host: $DATABASE_HOST"
+    log "Port: $DATABASE_PORT"
+    log "Database: $DATABASE_NAME"
+    log "User: $DATABASE_USER"
     exit 1
 fi
 
