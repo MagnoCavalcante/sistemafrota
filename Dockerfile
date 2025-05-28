@@ -19,21 +19,21 @@ RUN apt-get update && \
 # Copia os arquivos do projeto
 COPY . .
 
+# Garante que o script de entrypoint tem permissões de execução
+RUN chmod +x entrypoint.sh
+
 # Instala as dependências Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Cria diretórios necessários
-RUN mkdir -p /app/staticfiles /app/media
+# Cria diretórios necessários e ajusta permissões
+RUN mkdir -p /app/staticfiles /app/media && \
+    chmod -R 755 /app/staticfiles /app/media
 
 # Coleta arquivos estáticos
 RUN python manage.py collectstatic --noinput
 
-# Script de inicialização
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
 # Expõe a porta que o gunicorn vai usar
 EXPOSE ${PORT:-10000}
 
-# Comando para iniciar o servidor
-ENTRYPOINT ["/entrypoint.sh"] 
+# Define o script de entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"] 
