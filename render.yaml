@@ -4,13 +4,15 @@ services:
     env: docker
     region: oregon
     plan: free
+    domains:
+      - frota.mov.pro.br
     envVars:
       - key: DEBUG
         value: 0
       - key: SECRET_KEY
         generateValue: true
       - key: ALLOWED_HOSTS
-        value: frota.mov.pro.br localhost 127.0.0.1
+        value: frota.mov.pro.br localhost 127.0.0.1 sistemafrota-3.onrender.com
       - key: WEB_CONCURRENCY
         value: 4
       - key: PORT
