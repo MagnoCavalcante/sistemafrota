@@ -6,11 +6,20 @@ log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S %Z')] $@"
 }
 
+# Verifica se DATABASE_URL está definido
+if [ -z "$DATABASE_URL" ]; then
+    log "ERROR: DATABASE_URL is not set"
+    exit 1
+fi
+
 # Função para extrair informações do DATABASE_URL
 parse_db_url() {
     if [ ! -z "$DATABASE_URL" ]; then
+        log "Parsing DATABASE_URL..."
+        
         # Remove 'postgres://' ou 'postgresql://' do início
         local tmp_url=${DATABASE_URL#*://}
+        
         # Extrai usuário:senha
         local userpass=${tmp_url%%@*}
         # Extrai host:porta/dbname
@@ -21,9 +30,16 @@ parse_db_url() {
         DATABASE_HOST=${hostport%:*}
         # Extrai porta
         DATABASE_PORT=${hostport#*:}
-        log "Extracted database host: $DATABASE_HOST, port: $DATABASE_PORT"
+        # Extrai nome do banco
+        DATABASE_NAME=${hostportdb#*/}
+        
+        log "Successfully parsed DATABASE_URL"
+        log "Host: $DATABASE_HOST"
+        log "Port: $DATABASE_PORT"
+        log "Database: $DATABASE_NAME"
     else
-        log "WARNING: DATABASE_URL not set"
+        log "ERROR: DATABASE_URL is empty"
+        exit 1
     fi
 }
 
@@ -37,23 +53,25 @@ DATABASE_PORT=${DATABASE_PORT:-5432}
 log "Attempting to connect to database at $DATABASE_HOST:$DATABASE_PORT..."
 
 # Tenta conectar ao banco de dados com timeout maior
-max_tries=60  # Aumentado para 60 tentativas
+max_tries=60  # 60 tentativas = 5 minutos
 count=0
 while [ $count -lt $max_tries ]; do
-    if nc -z -w 5 $DATABASE_HOST $DATABASE_PORT 2>/dev/null; then
+    if PGPASSWORD=$DATABASE_PASSWORD psql -h "$DATABASE_HOST" -p "$DATABASE_PORT" -U "$DATABASE_USER" -d "$DATABASE_NAME" -c '\q' 2>/dev/null; then
         log "Successfully connected to database!"
         break
     fi
     count=$((count + 1))
     log "Waiting for database... ($count/$max_tries) - Host: $DATABASE_HOST, Port: $DATABASE_PORT"
-    sleep 5  # Aumentado para 5 segundos
+    sleep 5  # 5 segundos entre tentativas
 done
 
 if [ $count -eq $max_tries ]; then
-    log "Error: Could not connect to database after $max_tries attempts"
-    log "Database URL: ${DATABASE_URL//:*@/:****@}"  # Log URL mascarando a senha
+    log "ERROR: Could not connect to database after $max_tries attempts"
+    log "Database connection details:"
     log "Host: $DATABASE_HOST"
     log "Port: $DATABASE_PORT"
+    log "Database: $DATABASE_NAME"
+    log "User: $DATABASE_USER"
     exit 1
 fi
 
@@ -72,12 +90,12 @@ python manage.py collectstatic --noinput || {
 }
 
 # Configura o Gunicorn
-GUNICORN_WORKERS=${WEB_CONCURRENCY:-2}  # Reduzido para 2 workers
-GUNICORN_THREADS=${GUNICORN_THREADS:-4}  # Aumentado para 4 threads
-GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-180}  # Aumentado para 180 segundos
+GUNICORN_WORKERS=${WEB_CONCURRENCY:-2}
+GUNICORN_THREADS=${GUNICORN_THREADS:-4}
+GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-180}
 GUNICORN_MAX_REQUESTS=${GUNICORN_MAX_REQUESTS:-1000}
 GUNICORN_MAX_REQUESTS_JITTER=${GUNICORN_MAX_REQUESTS_JITTER:-50}
-GUNICORN_KEEPALIVE=${GUNICORN_KEEPALIVE:-65}  # Adicionado keepalive
+GUNICORN_KEEPALIVE=${GUNICORN_KEEPALIVE:-65}
 
 log "Starting Gunicorn with $GUNICORN_WORKERS workers and $GUNICORN_THREADS threads..."
 exec gunicorn sistemafrota.wsgi:application \

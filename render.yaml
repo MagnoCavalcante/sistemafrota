@@ -26,6 +26,18 @@ services:
         fromDatabase:
           name: sistemafrota-db
           property: connectionString
+      - key: DATABASE_SSL_MODE
+        value: "require"
+      - key: DATABASE_CONN_MAX_AGE
+        value: 60
+      - key: DATABASE_POOL_MIN_CONNECTIONS
+        value: 1
+      - key: DATABASE_POOL_MAX_CONNECTIONS
+        value: 10
+      - key: DATABASE_TIMEOUT
+        value: 30
+      - key: DATABASE_CONNECT_TIMEOUT
+        value: 60
       - key: DJANGO_SETTINGS_MODULE
         value: sistemafrota.settings
       - key: PYTHONUNBUFFERED
@@ -72,4 +84,7 @@ databases:
     user: sistemafrota_user
     plan: free
     ipAllowList: []
-    postgresMajorVersion: 15 
+    postgresMajorVersion: 15
+    options:
+      maxConnections: 20
+      sslMode: require 
