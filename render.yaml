@@ -14,7 +14,7 @@ services:
       - key: ALLOWED_HOSTS
         value: "*"
       - key: WEB_CONCURRENCY
-        value: 4
+        value: 2
       - key: PORT
         value: 10000
       - key: DATABASE_URL
@@ -33,7 +33,33 @@ services:
         value: sistemafrota.settings
       - key: PYTHONUNBUFFERED
         value: 1
-    healthCheckPath: /admin/
+      - key: DJANGO_DISABLE_COLLECTSTATIC
+        value: 0
+      - key: DJANGO_CONN_MAX_AGE
+        value: 60
+      - key: DJANGO_TIMEOUT
+        value: 180
+      - key: DJANGO_USE_GZIP
+        value: 1
+      - key: DJANGO_CACHE_MIDDLEWARE
+        value: 1
+      - key: DJANGO_SECURE_SSL_REDIRECT
+        value: 1
+      - key: DJANGO_SESSION_ENGINE
+        value: "django.contrib.sessions.backends.cached_db"
+      - key: GUNICORN_TIMEOUT
+        value: 180
+      - key: GUNICORN_MAX_REQUESTS
+        value: 1000
+      - key: GUNICORN_MAX_REQUESTS_JITTER
+        value: 50
+      - key: GUNICORN_WORKER_CLASS
+        value: "gthread"
+      - key: GUNICORN_THREADS
+        value: 3
+    healthCheckPath: /
+    healthCheckTimeout: 180
+    healthCheckContents: ""
     
 databases:
   - name: sistemafrota-db

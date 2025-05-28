@@ -218,11 +218,11 @@ def relatorio_manutencoes(request):
     }
     return render(request, 'relatorio/relatorio_manutencoes.html', context)
 
+@csrf_exempt
 def tela_login(request):
-    # Se for uma requisição HEAD, retornar uma resposta vazia com status 200
-    if request.method == 'HEAD':
-        from django.http import HttpResponse
-        return HttpResponse()
+    # Se for uma requisição HEAD ou GET sem autenticação, retornar 200 OK
+    if request.method in ['HEAD', 'GET'] and not request.user.is_authenticated:
+        return HttpResponse(status=200)
         
     next_url = request.GET.get('next', 'painel_frota')
     
