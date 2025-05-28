@@ -17,26 +17,22 @@ parse_db_url() {
     if [ ! -z "$DATABASE_URL" ]; then
         log "Parsing DATABASE_URL..."
         
-        # Remove 'postgres://' ou 'postgresql://' do início
         local tmp_url=${DATABASE_URL#*://}
-        
-        # Extrai usuário:senha
         local userpass=${tmp_url%%@*}
-        # Extrai host:porta/dbname
         local hostportdb=${tmp_url#*@}
-        # Extrai host:porta
         local hostport=${hostportdb%/*}
-        # Extrai host
         DATABASE_HOST=${hostport%:*}
-        # Extrai porta
         DATABASE_PORT=${hostport#*:}
-        # Extrai nome do banco
         DATABASE_NAME=${hostportdb#*/}
-        
+
+        DATABASE_USER=${userpass%%:*}
+        DATABASE_PASSWORD=${userpass#*:}
+
         log "Successfully parsed DATABASE_URL"
         log "Host: $DATABASE_HOST"
         log "Port: $DATABASE_PORT"
         log "Database: $DATABASE_NAME"
+        log "User: $DATABASE_USER"
     else
         log "ERROR: DATABASE_URL is empty"
         exit 1
