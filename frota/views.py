@@ -219,6 +219,11 @@ def relatorio_manutencoes(request):
     return render(request, 'relatorio/relatorio_manutencoes.html', context)
 
 def tela_login(request):
+    # Se for uma requisição HEAD, retornar uma resposta vazia com status 200
+    if request.method == 'HEAD':
+        from django.http import HttpResponse
+        return HttpResponse()
+        
     next_url = request.GET.get('next', 'painel_frota')
     
     if request.user.is_authenticated:

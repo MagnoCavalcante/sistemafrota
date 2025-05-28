@@ -4,7 +4,7 @@ from django.contrib.auth import views as auth_views
 from django.views.generic import RedirectView
 
 urlpatterns = [
-    path('', RedirectView.as_view(url='login/'), name='index'),
+    path('', views.tela_login, name='index'),
     path('painel/', views.painel_frota, name='painel_frota'),
     path('login/', views.tela_login, name='tela_login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='tela_login'), name='logout'),
