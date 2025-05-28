@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
+      - SECRET_KEY=your-secret-key-for-development
+      - DATABASE_URL=postgres://sistemafrota_user:sistemafrota_password@db:5432/sistemafrota
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - DJANGO_SETTINGS_MODULE=sistemafrota.settings
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=sistemafrota
+      - POSTGRES_USER=sistemafrota_user
+      - POSTGRES_PASSWORD=sistemafrota_password
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data: 
