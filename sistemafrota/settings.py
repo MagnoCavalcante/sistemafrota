@@ -30,7 +30,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-9_z=!_3-j$0e0c)i0n8t-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(os.environ.get('DEBUG', '1'))
 
-ALLOWED_HOSTS = ['sistemafrota-3.onrender.com', '127.0.0.1', 'localhost', 'frota.mov.pro.br']
+ALLOWED_HOSTS = ['sistemafrota-3.onrender.com', 'sistemafrota-4.onrender.com', '127.0.0.1', 'localhost', 'frota.mov.pro.br']
 
 
 # Application definition
