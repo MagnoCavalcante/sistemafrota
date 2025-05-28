@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN python manage.py collectstatic --noinput
 
 # Expõe a porta que o gunicorn vai usar
-EXPOSE 8000
+EXPOSE ${PORT:-8000}
 
 # Comando para iniciar o servidor
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "sistemafrota.wsgi:application"] 
+CMD gunicorn sistemafrota.wsgi:application --bind 0.0.0.0:${PORT:-8000} 
