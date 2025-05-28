@@ -45,27 +45,11 @@ parse_db_url
 
 log "Attempting to connect to database at $DATABASE_HOST:$DATABASE_PORT..."
 
-max_tries=60
-count=0
-while [ $count -lt $max_tries ]; do
-    if PGPASSWORD=$DATABASE_PASSWORD psql -h "$DATABASE_HOST" -p "$DATABASE_PORT" -U "$DATABASE_USER" -d "$DATABASE_NAME" -c '\q' 2>/dev/null; then
-        log "Successfully connected to database!"
-        break
-    fi
-    count=$((count + 1))
-    log "Waiting for database... ($count/$max_tries)"
-    sleep 5
-done
-
-if [ $count -eq $max_tries ]; then
-    log "ERROR: Could not connect to database after $max_tries attempts"
-    log "Database connection details:"
-    log "Host: $DATABASE_HOST"
-    log "Port: $DATABASE_PORT"
-    log "Database: $DATABASE_NAME"
-    log "User: $DATABASE_USER"
-    exit 1
-fi
+PGPASSWORD=$DATABASE_PASSWORD psql -h "$DATABASE_HOST" -p "$DATABASE_PORT" -U "$DATABASE_USER" -d "$DATABASE_NAME" -c '\q' 2>/dev/null && {
+    log "Successfully connected to database!"
+} || {
+    log "WARNING: Could not connect to database on first attempt. Proceeding anyway..."
+}
 
 log "Running migrations..."
 python manage.py migrate --noinput || {
