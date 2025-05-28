@@ -21,12 +21,20 @@ parse_db_url() {
         local userpass=${tmp_url%%@*}
         local hostportdb=${tmp_url#*@}
         local hostport=${hostportdb%/*}
-        DATABASE_HOST=${hostport%:*}
-        DATABASE_PORT=${hostport#*:}
         DATABASE_NAME=${hostportdb#*/}
 
+        # Extrai usuário e senha
         DATABASE_USER=${userpass%%:*}
         DATABASE_PASSWORD=${userpass#*:}
+
+        # Verifica se a porta está presente
+        if [[ "$hostport" == *:* ]]; then
+            DATABASE_HOST=${hostport%:*}
+            DATABASE_PORT=${hostport#*:}
+        else
+            DATABASE_HOST=$hostport
+            DATABASE_PORT=5432
+        fi
 
         log "Successfully parsed DATABASE_URL"
         log "Host: $DATABASE_HOST"
